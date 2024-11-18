@@ -8,6 +8,8 @@
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       mrwull
+ * Tested up to:      6.7
+ * PHP Version:       7.0
  *
  * @package mrw-user-last-login
  */

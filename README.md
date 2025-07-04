@@ -13,7 +13,7 @@ Mark Root-Wiley, [MRW Web Design, WordPress Websites for Nonprofits](https://MRW
 
 ## Credits
 
-Forked and just about completely rewritten from [User Registration Last Login Time](https://wordpress.org/plugins/user-registration-last-login-time/)
+Forked and just about completely rewritten from [User Registration Last Login Time](https://wordpress.org/plugins/user-registration-last-login-time/) under GPL v2.0 or later
 
 ## Changelog
 

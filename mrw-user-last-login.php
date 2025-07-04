@@ -2,21 +2,16 @@
 /**
  * Plugin Name:       MRW User Last Login
  * Description:       Saves user's last login to user meta and shows it on the All Users screen
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Mark Root-Wiley, MRW Web Design
  * Author URI:        https://MRWweb.com
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       mrwull
- * Tested up to:      6.7
+ * Tested up to:      6.8
  * PHP Version:       7.0
  *
  * @package mrw-user-last-login
  */
-
-// TODO: text on multisite
-// TODO: Autoexpire users over X days old
-// TODO: (low priority, but easy) Make columns filterable
 
 namespace MRW\UserLastLogin;
 use DateTime;
@@ -29,8 +24,8 @@ add_filter( 'manage_users_columns', __NAMESPACE__ . '\add_user_info_columns' );
  * @return arr $columns
  */
 function add_user_info_columns( $columns ) {
-    $columns[ 'registration_date' ] = esc_html__( 'Registration Date', 'mrwull' );
-    $columns[ 'last_login' ] = esc_html__( 'Last Login', 'mrwull' );
+    $columns[ 'registration_date' ] = esc_html__( 'Registration Date', 'mrw-user-last-login' );
+    $columns[ 'last_login' ] = esc_html__( 'Last Login', 'mrw-user-last-login' );
 
     return $columns;
 }
@@ -46,16 +41,16 @@ function register_sortable_columns( $columns ) {
     $columns['registration_date'] = array(
         'registration_date',
         false,
-        __( 'Registered On', 'mrwull' ),
-        __( 'Tabled ordered by registration date', 'mrwull' ),
+        __( 'Registered On', 'mrw-user-last-login' ),
+        __( 'Tabled ordered by registration date', 'mrw-user-last-login' ),
         'desc'
     );
 
     $columns['last_login'] = array(
         'last_login',
         false,
-        __( 'Last Login', 'mrwull' ),
-        __( 'Tabled ordered by last login date', 'mrwull' ),
+        __( 'Last Login', 'mrw-user-last-login' ),
+        __( 'Tabled ordered by last login date', 'mrw-user-last-login' ),
         'desc'
     );
 
@@ -84,24 +79,27 @@ function show_user_info( $value, $column_name, $user_id ) {
     $datetime_format = $date_format . ' ' . $time_format;
     $plugin_options = get_option( 'mrwull_options' );
     $before_date = new DateTime( $plugin_options['first_install_date_gmt'] );
-    $before_date_l10n = date( esc_attr( $date_format ), $before_date->getTimestamp() + $timezone_offset_in_seconds );
+    $before_date_l10n = gmdate( esc_attr( $date_format ), $before_date->getTimestamp() + $timezone_offset_in_seconds );
     $user = get_userdata( $user_id );
 
     if ( $column_name === 'registration_date' ) {
 
-        $value = date( esc_attr( $date_format ), strtotime( $user->user_registered ) + $timezone_offset_in_seconds );
+        $value = gmdate( esc_attr( $date_format ), strtotime( $user->user_registered ) + $timezone_offset_in_seconds );
 
     } elseif ( $column_name === 'last_login' ) {
 
         $last_login = get_user_meta($user_id, 'last_login_gmt', true);
+        $wf_last_login = get_user_meta($user_id, 'wfls-last-login', true);
 
         if ( ! empty( $last_login ) ) {
-
             $last_login = new DateTime( $last_login );  
-            $value = date( esc_attr( $datetime_format ), $last_login->getTimestamp() + $timezone_offset_in_seconds );
-
+            $value = gmdate( esc_attr( $datetime_format ), $last_login->getTimestamp() + $timezone_offset_in_seconds );
+        } else if( ! empty( $wf_last_login ) ) {
+            /* Translators: Tell user that the date is from WordFence data and may not be the most recent login */
+            $value = sprintf( esc_html__( 'No later than %s (Legacy WordFence data)', 'mrw-user-last-login' ), gmdate( esc_attr( $datetime_format ), $wf_last_login + $timezone_offset_in_seconds ) );
         } else {
-            $value = sprintf( esc_html__( 'Unknown (before %s)', 'mrwull' ), $before_date_l10n );
+            /* Translators: Last login date not know but was before date of plugin install */
+            $value = sprintf( esc_html__( 'Unknown (before %s)', 'mrw-user-last-login' ), $before_date_l10n );
         }
     }
 
@@ -151,7 +149,7 @@ register_activation_hook( __FILE__, __NAMESPACE__ . '\set_plugin_install_date' )
  * @return void
  */
 function set_plugin_install_date() {
-    $plugin_options = get_option( 'mrwull_options' );
+    $plugin_options = get_option( 'mrw-user-last-login_options' );
     
     if( isset( $plugin_options['first_install_date_gmt'] ) ) {
         return;
@@ -159,5 +157,5 @@ function set_plugin_install_date() {
 
     $plugin_options['first_install_date_gmt'] = gmdate( 'Y-m-d H:i:s' );
 
-    update_option( 'mrwull_options', $plugin_options, false );
+    update_option( 'mrw-user-last-login_options', $plugin_options, false );
 }

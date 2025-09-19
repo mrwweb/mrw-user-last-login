@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       MRW User Last Login
  * Description:       Saves user's last login to user meta and shows it on the All Users screen
- * Version:           1.1.0
+ * Version:           1.1.1
  * Author:            Mark Root-Wiley, MRW Web Design
  * Author URI:        https://MRWweb.com
  * License:           GPL-2.0-or-later
@@ -78,7 +78,7 @@ function show_user_info( $value, $column_name, $user_id ) {
     $timezone_offset_in_seconds = $timezone_offset * HOUR_IN_SECONDS;
     $datetime_format = $date_format . ' ' . $time_format;
     $plugin_options = get_option( 'mrwull_options' );
-    $before_date = new DateTime( $plugin_options['first_install_date_gmt'] );
+    $before_date = new DateTime( $plugin_options ? $plugin_options['first_install_date_gmt'] : 'now' );
     $before_date_l10n = gmdate( esc_attr( $date_format ), $before_date->getTimestamp() + $timezone_offset_in_seconds );
     $user = get_userdata( $user_id );
 
@@ -149,13 +149,16 @@ register_activation_hook( __FILE__, __NAMESPACE__ . '\set_plugin_install_date' )
  * @return void
  */
 function set_plugin_install_date() {
-    $plugin_options = get_option( 'mrw-user-last-login_options' );
+    $plugin_options = get_option( 'mrwull_options' );
     
     if( isset( $plugin_options['first_install_date_gmt'] ) ) {
         return;
     }
 
+    if( ! is_array( $plugin_options ) ) {
+        $plugin_options = [];
+    }
     $plugin_options['first_install_date_gmt'] = gmdate( 'Y-m-d H:i:s' );
 
-    update_option( 'mrw-user-last-login_options', $plugin_options, false );
+    update_option( 'mrwull_options', $plugin_options, false );
 }
